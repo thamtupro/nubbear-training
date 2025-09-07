@@ -1,0 +1,42 @@
+version: "3.7"
+
+services:
+    etcd:
+        restart: unless-stopped
+        image: bitnami/etcd:3.5.11
+        container_name: etcd
+        environment:
+            - ALLOW_NONE_AUTHENTICATION=yes
+            - ETCD_ADVERTISE_CLIENT_URLS=http://etcd:2379
+            - ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379
+        ports:
+            - "2379:2379"
+            - "2380:2380"
+    apisix:
+        restart: always
+        image: apache/apisix:3.12.0-debian
+        container_name: apisix
+        depends_on:
+          - etcd
+        environment:
+          - ETCD_HOST=etcd
+        volumes:
+          - ./config-etcd.yaml:/usr/local/apisix/conf/config.yaml:rw
+        ports:
+            - "9080:9080" # HTTP
+            - "9443:9443" # HTTPS
+            - "9091:9091" # Admin API
+        links:
+          - "etcd:database"
+    apisix-dashboard:
+        restart: always
+        container_name: dashboard
+        image: apache/apisix-dashboard:latest
+        ports:
+           - "9000:9000"
+        environment:
+           - CONF_ETCD_HOST=http://etcd:2379
+        volumes:
+          - ./dashboard.yaml:/usr/local/apisix-dashboard/conf/conf.yaml:rw
+        depends_on:
+           - etcd

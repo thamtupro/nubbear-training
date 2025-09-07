@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+    name: apisix-config
+    namespace: {{ .Values.namespace }}
+data:
+    config.yaml: |
+        apisix:
+    {{- if kindIs "slice" .Values.apisix.node_listen }}
+          node_listen:
+    {{- range .Values.apisix.node_listen }}
+    {{- if .port }}
+            - port: {{ .port }}
+              ip: {{ .ip | default "0.0.0.0" }}
+    {{- else }}
+            - {{ . }}
+    {{- end }}
+    {{- end }}
+    {{- else }}
+          node_listen: {{ .Values.apisix.node_listen }}
+    {{- end }}
+
+

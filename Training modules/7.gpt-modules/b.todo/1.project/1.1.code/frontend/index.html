@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Todo App+</title></head>
+<body>
+  <h1>Todos</h1>
+  <input id="todoInput" placeholder="New todo">
+  <button onclick="addTodo()">Add</button>
+  <ul id="todoList"></ul>
+<script>
+async function loadTodos(){
+  const r = await fetch('/api/todos'); const data = await r.json();
+  const ul = document.getElementById('todoList'); ul.innerHTML='';
+  data.forEach(t=>{
+    const li=document.createElement('li'); li.textContent=t.title+' ('+t.id+')';
+    li.onclick=()=>delTodo(t.id); ul.appendChild(li);
+  });
+}
+async function addTodo(){
+  const title=document.getElementById('todoInput').value;
+  await fetch('/api/todos',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title})});
+  loadTodos();
+}
+async function delTodo(id){ await fetch('/api/todos/'+id,{method:'DELETE'}); loadTodos(); }
+loadTodos();
+</script>
+</body>
+</html>

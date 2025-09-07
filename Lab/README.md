@@ -1,0 +1,91 @@
+# Google Cloud
+1/ Learning path: 
+  - Cloud DevOps: https://www.cloudskillsboost.google/paths/20
+
+# Lab note
+1. turn off swap
+  - swapoff -a
+  - sed -i '/ sawp / s/^\(.*\)$/#\1/g' /etc/fstab
+
+2. install ansible 2.14
+  - install ansible on ubuntu 22.04, maximum 2.12
+    - tried on https://medium.com/@kadimasam/install-ansible-on-ubuntu-22-04-f5152edcbdce -> didn't work
+    - tried on https://www.cyberciti.biz/faq/how-to-install-and-configure-latest-version-of-ansible-on-ubuntu-linux/ -> worked
+
+3. setup ssh
+-> unlock root account -> create and copy ssh-keygen -> try to ssh via root account
+-> tried on https://askubuntu.com/questions/497895/permission-denied-for-rootlocalhost-for-ssh-connection -> worked 
+-> tried on https://askubuntu.com/questions/423942/change-password-on-root-user-and-user-account -> worked
+
+4. setup k8s using kubespray
+-> tried on https://github.com/kubernetes-sigs/kubespray/tree/release-2.25 -> worked
+
+5. setup rancher
+-> tried docker: curl -o /tmp/install.sh https://get.docker.com && chmod +x /tmp/install.sh && /tmp/install.sh
+-> install docker compose: https://docs.docker.com/compose/install/linux/#install-the-plugin-manually
+
+6. configure to access from internet
+-> found this: https://stackoverflow.com/questions/5108483/access-localhost-from-the-internet
+-> tried on https://theboroer.github.io/localtunnel-www/ -> worked
+-> access outside network: lt --port 80, password: 14.232.157.43
+
+7. install Minikube
+-> https://kubernetes.io/vi/docs/tasks/tools/install-minikube/
+-> Running command "minikube start" when vm start: https://askubuntu.com/questions/814/how-to-run-scripts-on-start-up
+
+8. install RKE
+-> follow command:
+CATTLE_AGENT_FALLBACK_PATH="/opt/rke2/bin" curl --insecure -fL https://192.168.1.109/system-agent-install.sh | sudo CATTLE_AGENT_FALLBACK_PATH="/opt/rke2/bin" sh -s - --server \\
+https://192.168.1.109 --label 'cattle.io/os=linux' --token gswbgxwv6dfx4dlw9r7sdd9mlttwl4x8lznxkq4xsgmb5hkt44z4hl --ca-checksum 0b1224c1a6c0058a3dc1c2bdce43f635f21149f2e07d6a7100873e0b4af026dd \\
+--etcd --controlplane --worker
+
+9. connect SQLServer
+-> tried: https://learn.microsoft.com/en-us/answers/questions/1320162/how-to-fix-error-microsoft-odbc-driver-18-for-sql
+-> command: docker exec -it sqlserver /opt/mssql-tools18/bin/sqlcmd -S[host] -U sa -P [password] -C
+
+10. install NodeJS
+-> tried: https://www.digitalocean.com/community/tutorials/how-to-install-node-js-on-ubuntu-22-04
+
+# How to learn any new toolchains:
+1. (**What**) Definition: What is this toolchain?
+2. (**Why**) Purpose: What problems that the toolchain is trying to solve?
+3. (**How**) Flow: How this toolchain works?
+
+# Writing Github file .md:
+- https://stackoverflow.com/questions/14494747/how-to-add-images-to-readme-md-on-github
+- https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax
+- https://github.com/orgs/community/discussions/18966
+- https://stackoverflow.com/questions/19331362/using-an-image-caption-in-markdown-jekyll
+
+# Filebeats (Elastic)
+
+## Reference Links
+- https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-overview.html
+- https://www.elastic.co/guide/en/beats/filebeat/current/how-filebeat-works.html
+- https://www.elastic.co/guide/en/beats/libbeat/8.15/beats-reference.html
+
+## What are [Beats](https://www.elastic.co/guide/en/beats/libbeat/8.15/beats-reference.html)?
+- Beats are open source data shippers used to send operational data directy to Elasticsearch or via Logstash, where you can further process and enhance the data, before visualizing it in Kibana.
+- Some types of Beats:
+  - [Auditbeat](https://www.elastic.co/products/beats/auditbeat): Audit data
+  - [Filebeat](https://www.elastic.co/products/beats/filebeat): Logs, journals data
+  - [Heartbeat](https://www.elastic.co/products/beats/heartbeat): Availability data
+  - [Metricbeat](https://www.elastic.co/products/beats/metricbeat): Metrics data
+
+## What is Filebeat?
+- Filebeat is a lightweight shipper, and used for forwarding and centralizing log data. <=> Logs data "shipper"
+- Filebeat is an **Elastic Beats** (collections of data shippers (many types of data)).
+
+## Purpose of Filebeat?
+- Filebeat monitors the log files or locations that you specify, collects log events, and forwards them either to Elasticsearch or Logstash for indexing.
+=> Flow: logs -> Filebeat -> [ Logstash (for parsing logs) ] -> Elasticsearch
+
+## Flow of Filebeat
+- Filebeat consisnts of 2 components: inputs and haverster
+![screenshot](./Logging/img/filebeat_1.png)
+
+- Flow: inputs -> harvester -> libbeat -> outputs
+  - Find logs based on **input**.
+  - When logs found, start **harvester**.
+  - Havester reads and send new content of log data to **libbeat**.
+  - Libbeat aggregates event and sends aggregated data into **output** (Elasticsearch/Logstash).

@@ -1,0 +1,48 @@
+services:
+  mariadb:
+    image: docker.io/bitnami/mariadb:latest
+    container_name: mariadb
+    restart: unless-stopped
+    environment:
+      - MARIADB_ROOT_PASSWORD=root
+      - MARIADB_USER=bn_moodle
+      - MARIADB_PASSWORD=your_db_password
+      - MARIADB_DATABASE=bitnami_moodle
+      - MARIADB_CHARACTER_SET=utf8mb4
+      - MARIADB_COLLATE=utf8mb4_unicode_ci
+    volumes:
+      - mariadb_data:/bitnami/mariadb
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-psecure123"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  moodle:
+    image: docker.io/bitnami/moodle:latest
+    container_name: moodle
+    restart: unless-stopped
+    ports:
+      - '80:8080'
+      - '443:8443'
+    environment:
+      - MOODLE_DATABASE_HOST=mariadb
+      - MOODLE_DATABASE_PORT_NUMBER=3306
+      - MOODLE_DATABASE_USER=bn_moodle
+      - MOODLE_DATABASE_PASSWORD=your_db_password
+      - MOODLE_USERNAME=admin
+      - MOODLE_PASSWORD=Admin@12345
+      - BITNAMI_DEBUG=true
+    volumes:
+      - moodle_data:/bitnami/moodle
+      - moodledata_data:/bitnami/moodledata
+    depends_on:
+      mariadb:
+        condition: service_healthy
+
+volumes:
+  mariadb_data:
+    driver: local
+  moodle_data:
+    driver: local
+  moodledata_data:
+    driver: local
